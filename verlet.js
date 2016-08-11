@@ -52,13 +52,27 @@ function generatePoints(length) {
 }
 
 // Connects (n-1)^2 squares in a grid of length n
-function generateConstraints() {
-  // TODO
+function generateConstraint(points) {
+  var constraints = [];
+  // Connect all y to y+1 points
+  for (var x = 0; x < points.length; x++) {
+    for (var y = 0; y < points.length - 1; y++) {
+      constraints.push(new Constraint(points[x][y], points[x][y+1]));
+    }
+  }
+
+  // Connect all x to x+1 points
+  for (var x = 0; x < points.length - 1; x++) {
+    for (var y = 0; y < points.length; y++) {
+      constraints.push(new Constraint(points[x][y], points[x+1][y]));
+    }
+  }
+  return constraints;
 }
 
 function Simulation() {
   this.points = generatePoints(GRID_LENGTH);
-  this.constraints = generateConstraints();
+  this.constraints = generateConstraint(this.points);
 }
 
 
@@ -72,17 +86,9 @@ Simulation.prototype.getLength = function() {
   return GRID_LENGTH;
 };
 
-var FILL_STYLE = '#00FF00';
-var STROKE_STYLE = '#0000FF';
-var LINE_WIDTH = 1;
-
-function Renderer(canvas) {
-  this.canvas = canvas;
-
-  this.canvas.fillStyle = FILL_STYLE
-  this.canvas.strokeStyle = STROKE_STYLE
-  this.canvas.lineWidth = LINE_WIDTH
-}
+Simulation.prototype.getConstraints = function() {
+  return this.constraints;
+};
 
 function Point(x, y, anchored) {
   this.x = x;
@@ -95,18 +101,42 @@ Point.prototype.getY = function() { return this.y };
 Point.prototype.isAnchored = function() { return this.anchored };
 Point.prototype.setAnchor = function(isAnchored) { this.anchored = isAnchored };
 
-function Constraints(pointA, pointB, length) {
+function Constraint(pointA, pointB, length) {
   this.pointA = pointA;
   this.pointB = pointB;
   this.length = length;
 }
 
+Constraint.prototype.getStartPoint = function() { return this.pointA; };
+Constraint.prototype.getEndPoint = function() { return this.pointB; };
+
+
+var FILL_STYLE = '#00FF00';
+var STROKE_STYLE = '#0000FF';
+var LINE_WIDTH = 0.5;
+
+function Renderer(canvas) {
+  this.canvas = canvas;
+
+  this.canvas.fillStyle = FILL_STYLE
+  this.canvas.strokeStyle = STROKE_STYLE
+  this.canvas.lineWidth = LINE_WIDTH
+}
+
+
 Renderer.prototype.draw = function(sim) {
-  var length = sim.getLength();
+  this.canvas.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  var length = GRID_LENGTH;
   for (var x = 0; x < length; x++) {
     for (var y = 0; y < length; y++) {
       this.renderPoint(sim.getPointAt(x, y));
     }
+  }
+
+  var constraints = sim.getConstraints();
+  var constraintsLength = constraints.length;
+  for (var i = 0; i < constraintsLength; i++) {
+    this.renderConstraint(constraints[i]);
   }
 };
 
@@ -114,6 +144,15 @@ Renderer.prototype.renderPoint = function(point) {
   this.canvas.beginPath();
   this.canvas.arc(point.getX(), point.getY(), RADIUS, 0, 2 * Math.PI);
   this.canvas.fill();
+  this.canvas.stroke();
+};
+
+Renderer.prototype.renderConstraint = function(constraint) {
+  var startPoint = constraint.getStartPoint();
+  var endPoint = constraint.getEndPoint();
+  this.canvas.beginPath();
+  this.canvas.moveTo(startPoint.getX(), startPoint.getY());
+  this.canvas.lineTo(endPoint.getX(), endPoint.getY());
   this.canvas.stroke();
 };
 
