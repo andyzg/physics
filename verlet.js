@@ -11,6 +11,9 @@ var RADIUS = 1;
 var CANVAS_HEIGHT = 600;
 var CANVAS_WIDTH = 600;
 
+// Gravity applied every frame
+var GRAVITY = 0.1;
+
 function Controller(canvasElement) {
   canvasElement.width = CANVAS_WIDTH;
   canvasElement.height = CANVAS_HEIGHT;
@@ -94,10 +97,20 @@ function Point(x, y, anchored) {
   this.x = x;
   this.y = y;
   this.anchored = anchored || false;
+
+  this.oldX = this.oldX;
+  this.oldY = this.oldY;
+
+  this.dx = 0;
+  this.dy = 0;
 }
 
 Point.prototype.getX = function() { return this.x };
 Point.prototype.getY = function() { return this.y };
+Point.prototype.getOldX = function() { return this.oldX };
+Point.prototype.getOldY = function() { return this.oldY };
+Point.prototype.getDx = function() { return this.dx };
+Point.prototype.getDy = function() { return this.dy };
 Point.prototype.isAnchored = function() { return this.anchored };
 Point.prototype.setAnchor = function(isAnchored) { this.anchored = isAnchored };
 
@@ -126,13 +139,33 @@ function Renderer(canvas) {
 
 Renderer.prototype.draw = function(sim) {
   this.canvas.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  this.calculatePosition();
+  this.calculateConstraints();
+
+  this.drawPoints(sim);
+
+  this.drawConstraints(sim);
+};
+
+Renderer.prototype.calculatePosition = function(sim) {
+
+};
+
+Renderer.prototype.calculateConstraints = function(sim) {
+
+};
+
+Renderer.prototype.drawPoints = function(sim) {
   var length = GRID_LENGTH;
   for (var x = 0; x < length; x++) {
     for (var y = 0; y < length; y++) {
       this.renderPoint(sim.getPointAt(x, y));
     }
   }
+};
 
+Renderer.prototype.drawConstraints = function(sim) {
   var constraints = sim.getConstraints();
   var constraintsLength = constraints.length;
   for (var i = 0; i < constraintsLength; i++) {
