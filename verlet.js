@@ -72,8 +72,16 @@ Simulation.prototype.getLength = function() {
   return GRID_LENGTH;
 };
 
+var FILL_STYLE = '#00FF00';
+var STROKE_STYLE = '#0000FF';
+var LINE_WIDTH = 1;
+
 function Renderer(canvas) {
   this.canvas = canvas;
+
+  this.canvas.fillStyle = FILL_STYLE
+  this.canvas.strokeStyle = STROKE_STYLE
+  this.canvas.lineWidth = LINE_WIDTH
 }
 
 function Point(x, y, anchored) {
